@@ -296,5 +296,282 @@ run();
 **output**
 ![image](https://github.com/sathiya7g/ES6-Javascript-Assignment/assets/113282947/a8b84ee9-dc43-4df5-ad0e-ec35d4b63d67)
 
+**Project Assignment: Build a To-Do List Application Using ES6 JavaScript**
+Objective:
+Create a fully functional To-Do List application using ES6 JavaScript. This project will help you understand and apply ES6 features, such as classes, modules, arrow functions, template literals, and the fetch API.
+
+**coding**
+
+index.html
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>To-Do List</h1>
+    <div class="input-container">
+      <input type="text" id="task-title" placeholder="Task Title">
+      <textarea id="task-description" placeholder="Description (optional)"></textarea>
+      <input type="date" id="task-due-date">
+      <button id="add-task-btn">Add Task</button>
+    </div>
+    <div class="filter-container">
+      <label for="filter-status">Filter by Status:</label>
+      <select id="filter-status">
+        <option value="all">All</option>
+        <option value="completed">Completed</option>
+        <option value="incomplete">Incomplete</option>
+      </select>
+    </div>
+    <ul id="task-list"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
+**style.css**
+```
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+.container {
+  width: 500px;
+  margin: 50px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+input[type="text"],
+textarea,
+input[type="date"] {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.filter-container {
+  margin-bottom: 20px;
+}
+
+#task-list {
+  list-style: none;
+  padding: 0;
+}
+
+#task-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 3px;
+}
+
+#task-list li.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+}
+```
+**script.js.txt**
+```
+// script.js
+class Task {
+  constructor(title, description, dueDate, isCompleted = false) {
+    this.title = title;
+    this.description = description;
+    this.dueDate = dueDate;
+    this.isCompleted = isCompleted;
+  }
+}
+
+class ToDoList {
+  constructor() {
+    this.tasks = [];
+    this.loadTasks();
+  }
+
+  addTask(task) {
+    this.tasks.push(task);
+    this.saveTasks();
+    this.renderTasks();
+  }
+
+  editTask(index, newTask) {
+    this.tasks[index] = newTask;
+    this.saveTasks();
+    this.renderTasks();
+  }
+
+  deleteTask(index) {
+    this.tasks.splice(index, 1);
+    this.saveTasks();
+    this.renderTasks();
+  }
+
+  toggleTaskCompletion(index) {
+    this.tasks[index].isCompleted = !this.tasks[index].isCompleted;
+    this.saveTasks();
+    this.renderTasks();
+  }
+
+  filterTasks(filterStatus) {
+    let filteredTasks = [];
+    if (filterStatus === 'all') {
+      filteredTasks = this.tasks;
+    } else if (filterStatus === 'completed') {
+      filteredTasks = this.tasks.filter(task => task.isCompleted);
+    } else if (filterStatus === 'incomplete') {
+      filteredTasks = this.tasks.filter(task => !task.isCompleted);
+    }
+    this.renderTasks(filteredTasks);
+  }
+
+  saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+  }
+
+  loadTasks() {
+    const storedTasks = localStorage.getItem('tasks');
+    if (storedTasks) {
+      this.tasks = JSON.parse(storedTasks);
+    }
+  }
+
+  renderTasks(tasks = this.tasks) {
+    const taskList = document.getElementById('task-list');
+    taskList.innerHTML = ''; // Clear the list
+
+    tasks.forEach((task, index) => {
+      const listItem = document.createElement('li');
+      listItem.classList.add('task');
+      if (task.isCompleted) {
+        listItem.classList.add('completed');
+      }
+
+      listItem.innerHTML = `
+        <div class="task-content">
+          <input type="checkbox" ${task.isCompleted ? 'checked' : ''} data-index="${index}">
+          <span>${task.title}</span>
+          <span class="due-date">${task.dueDate}</span>
+        </div>
+        <div class="actions">
+          <button class="edit-btn" data-index="${index}">Edit</button>
+          <button class="delete-btn" data-index="${index}">Delete</button>
+        </div>
+      `;
+
+      taskList.appendChild(listItem);
+    });
+
+    // Add event listeners for checkboxes, edit, and delete buttons
+    const checkboxes = taskList.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const index = checkbox.dataset.index;
+        toDoList.toggleTaskCompletion(index);
+      });
+    });
+
+    const editButtons = taskList.querySelectorAll('.edit-btn');
+    editButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const index = button.dataset.index;
+        // Handle edit functionality here
+        // You might want to display a modal or update the task directly in the list item
+      });
+    });
+
+    const deleteButtons = taskList.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const index = button.dataset.index;
+        toDoList.deleteTask(index);
+      });
+    });
+  }
+}
+
+const toDoList = new ToDoList();
+
+const addTaskBtn = document.getElementById('add-task-btn');
+addTaskBtn.addEventListener('click', () => {
+  const title = document.getElementById('task-title').value;
+  const description = document.getElementById('task-description').value;
+  const dueDate = document.getElementById('task-due-date').value;
+
+  if (title) {
+    const newTask = new Task(title, description, dueDate);
+    toDoList.addTask(newTask);
+    document.getElementById('task-title').value = '';
+    document.getElementById('task-description').value = '';
+    document.getElementById('task-due-date').value = '';
+  }
+});
+
+const filterStatusSelect = document.getElementById('filter-status');
+filterStatusSelect.addEventListener('change', () => {
+  const filterStatus = filterStatusSelect.value;
+  toDoList.filterTasks(filterStatus);
+});
+
+// Initial render of tasks
+toDoList.renderTasks();
+s
+```
+**output:**
+![image](https://github.com/sathiya7g/ES6-Javascript-Assignment/assets/113282947/3f24fde9-1ae8-41d0-8a19-fdfa68165a63)
+
+
 
 
